@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: nginx-ingress-argocd-additional-permissions
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: nginx-ingress-argocd-additional-permissions
+subjects:
+- kind: ServiceAccount
+  name: argocd-ingress-workload-deployer
+  namespace: idfcts-ocp-argocd-serviceaccounts

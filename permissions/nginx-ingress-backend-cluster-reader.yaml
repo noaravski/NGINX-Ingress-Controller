@@ -1,0 +1,36 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: nginx-ingress-backend-cluster-reader
+rules:
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
+      - ''
+    resources:
+      - configmaps
+      - namespaces
+      - services
+      - pods
+      - resourcequotas
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
+      - apps
+    resources:
+      - deployments
+  - verbs:
+      - list
+      - watch
+      - get
+    apiGroups:
+      - k8s.nginx.org
+    resources:
+      - virtualservers
+      - virtualserverroutes
+      - transportservers
+      - policies

@@ -2,6 +2,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: nsadmin-nginx-extensions
+  labels:
+    rbac.authroziation.k8s.io/aggregate-to-nsadmin: "true"
 rules:
 - apiGroups:
   - k8s.nginx.org

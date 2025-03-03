@@ -1,0 +1,10 @@
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: nginx
+  labels:
+    app.kubernetes.io/instance: nginx-ingress
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/version: 3.7.1
+spec:
+  controller: nginx.org/ingress-controller

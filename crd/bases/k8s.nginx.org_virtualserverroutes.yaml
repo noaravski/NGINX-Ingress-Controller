@@ -4,21 +4,21 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.18.0
-  name: virtualservers.k8s.nginx.org
+  name: virtualserverroutes.k8s.nginx.org
 spec:
   group: k8s.nginx.org
   names:
-    kind: VirtualServer
-    listKind: VirtualServerList
-    plural: virtualservers
+    kind: VirtualServerRoute
+    listKind: VirtualServerRouteList
+    plural: virtualserverroutes
     shortNames:
-    - vs
-    singular: virtualserver
+    - vsr
+    singular: virtualserverroute
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
-    - description: Current state of the VirtualServer. If the resource has a valid
-        status, it means it has been validated and accepted by the Ingress Controller.
+    - description: Current state of the VirtualServerRoute. If the resource has a
+        valid status, it means it has been validated and accepted by the Ingress Controller.
       jsonPath: .status.state
       name: State
       type: string
@@ -41,7 +41,7 @@ spec:
     name: v1
     schema:
       openAPIV3Schema:
-        description: VirtualServer defines the VirtualServer resource.
+        description: VirtualServerRoute defines the VirtualServerRoute resource.
         properties:
           apiVersion:
             description: |-
@@ -61,110 +61,23 @@ spec:
           metadata:
             type: object
           spec:
-            description: VirtualServerSpec is the spec of the VirtualServer resource.
+            description: VirtualServerRouteSpec is the spec of the VirtualServerRoute
+              resource.
             properties:
-              dos:
-                description: A reference to a DosProtectedResource, setting this enables
-                  DOS protection of the VirtualServer route.
-                type: string
-              externalDNS:
-                description: The externalDNS configuration for a VirtualServer.
-                properties:
-                  enable:
-                    description: Enables ExternalDNS integration for a VirtualServer
-                      resource. The default is false.
-                    type: boolean
-                  labels:
-                    additionalProperties:
-                      type: string
-                    description: Configure labels to be applied to the Endpoint resources
-                      that will be consumed by ExternalDNS.
-                    type: object
-                  providerSpecific:
-                    description: Configure provider specific properties which holds
-                      the name and value of a configuration which is specific to individual
-                      DNS providers.
-                    items:
-                      description: |-
-                        ProviderSpecificProperty defines specific property
-                        for using with ExternalDNS sub-resource.
-                      properties:
-                        name:
-                          description: Name of the property
-                          type: string
-                        value:
-                          description: Value of the property
-                          type: string
-                      type: object
-                    type: array
-                  recordTTL:
-                    description: TTL for the DNS record. This defaults to 0 if not
-                      defined.
-                    format: int64
-                    type: integer
-                  recordType:
-                    description: The record Type that should be created, e.g. “A”,
-                      “AAAA”, “CNAME”. This is automatically computed based on the
-                      external endpoints if not defined.
-                    type: string
-                type: object
-              gunzip:
-                description: Enables or disables decompression of gzipped responses
-                  for clients. Allowed values “on”/“off”, “true”/“false” or “yes”/“no”.
-                  If the gunzip value is not set, it defaults to off.
-                type: boolean
               host:
                 description: The host (domain name) of the server. Must be a valid
                   subdomain as defined in RFC 1123, such as my-app or hello.example.com.
                   When using a wildcard domain like *.example.com the domain must
-                  be contained in double quotes. The host value needs to be unique
-                  among all Ingress and VirtualServer resources.
-                type: string
-              http-snippets:
-                description: Sets a custom snippet in the http context.
+                  be contained in double quotes. Must be the same as the host of the
+                  VirtualServer that references this resource.
                 type: string
               ingressClassName:
                 description: Specifies which Ingress Controller must handle the VirtualServerRoute
                   resource. Must be the same as the ingressClassName of the VirtualServer
                   that references this resource.
                 type: string
-              internalRoute:
-                description: InternalRoute allows for the configuration of internal
-                  routing.
-                type: boolean
-              listener:
-                description: Sets a custom HTTP and/or HTTPS listener. Valid fields
-                  are listener.http and listener.https. Each field must reference
-                  the name of a valid listener defined in a GlobalConfiguration resource
-                properties:
-                  http:
-                    description: The name of an HTTP listener defined in a GlobalConfiguration
-                      resource.
-                    type: string
-                  https:
-                    description: The name of an HTTPS listener defined in a GlobalConfiguration
-                      resource.
-                    type: string
-                type: object
-              policies:
-                description: A list of policies.
-                items:
-                  description: PolicyReference references a policy by name and an
-                    optional namespace.
-                  properties:
-                    name:
-                      description: The name of a policy. If the policy doesn’t exist
-                        or invalid, NGINX will respond with an error response with
-                        the 500 status code.
-                      type: string
-                    namespace:
-                      description: The namespace of a policy. If not specified, the
-                        namespace of the VirtualServer resource is used.
-                      type: string
-                  type: object
-                type: array
-              routes:
-                description: A list of routes.
+              subroutes:
+                description: A list of subroutes.
                 items:
                   description: Route defines a route.
                   properties:
@@ -920,108 +833,6 @@ spec:
                       type: array
                   type: object
                 type: array
-              server-snippets:
-                description: Sets a custom snippet in server context. Overrides the
-                  server-snippets ConfigMap key.
-                type: string
-              tls:
-                description: The TLS termination configuration.
-                properties:
-                  cert-manager:
-                    description: The cert-manager configuration of the TLS for a VirtualServer.
-                    properties:
-                      cluster-issuer:
-                        description: the name of a ClusterIssuer. A ClusterIssuer
-                          is a cert-manager resource which describes the certificate
-                          authority capable of signing certificates. It does not matter
-                          which namespace your VirtualServer resides, as ClusterIssuers
-                          are non-namespaced resources. Please note that one of issuer
-                          and cluster-issuer are required, but they are mutually exclusive
-                          - one and only one must be defined.
-                        type: string
-                      common-name:
-                        description: This field allows you to configure spec.commonName
-                          for the Certificate to be generated. This configuration
-                          adds a CN to the x509 certificate.
-                        type: string
-                      duration:
-                        description: This field allows you to configure spec.duration
-                          field for the Certificate to be generated. Must be specified
-                          using a Go time.Duration string format, which does not allow
-                          the d (days) suffix. You must specify these values using
-                          s, m, and h suffixes instead.
-                        type: string
-                      issue-temp-cert:
-                        description: When true, ask cert-manager for a temporary self-signed
-                          certificate pending the issuance of the Certificate. This
-                          allows HTTPS-only servers to use ACME HTTP01 challenges
-                          when the TLS secret does not exist yet.
-                        type: boolean
-                      issuer:
-                        description: the name of an Issuer. An Issuer is a cert-manager
-                          resource which describes the certificate authority capable
-                          of signing certificates. The Issuer must be in the same
-                          namespace as the VirtualServer resource. Please note that
-                          one of issuer and cluster-issuer are required, but they
-                          are mutually exclusive - one and only one must be defined.
-                        type: string
-                      issuer-group:
-                        description: The API group of the external issuer controller,
-                          for example awspca.cert-manager.io. This is only necessary
-                          for out-of-tree issuers. This cannot be defined if cluster-issuer
-                          is also defined.
-                        type: string
-                      issuer-kind:
-                        description: The kind of the external issuer resource, for
-                          example AWSPCAIssuer. This is only necessary for out-of-tree
-                          issuers. This cannot be defined if cluster-issuer is also
-                          defined.
-                        type: string
-                      renew-before:
-                        description: this annotation allows you to configure spec.renewBefore
-                          field for the Certificate to be generated. Must be specified
-                          using a Go time.Duration string format, which does not allow
-                          the d (days) suffix. You must specify these values using
-                          s, m, and h suffixes instead.
-                        type: string
-                      usages:
-                        description: This field allows you to configure spec.usages
-                          field for the Certificate to be generated. Pass a string
-                          with comma-separated values i.e. key agreement,digital signature,
-                          server auth. An exhaustive list of supported key usages
-                          can be found in the the cert-manager api documentation.
-                        type: string
-                    type: object
-                  redirect:
-                    description: The redirect configuration of the TLS for a VirtualServer.
-                    properties:
-                      basedOn:
-                        description: The attribute of a request that NGINX will evaluate
-                          to send a redirect. The allowed values are scheme (the scheme
-                          of the request) or x-forwarded-proto (the X-Forwarded-Proto
-                          header of the request). The default is scheme.
-                        type: string
-                      code:
-                        description: 'The status code of a redirect. The allowed values
-                          are: 301, 302, 307 or 308. The default is 301.'
-                        type: integer
-                      enable:
-                        description: Enables a TLS redirect for a VirtualServer. The
-                          default is False.
-                        type: boolean
-                    type: object
-                  secret:
-                    description: The name of a secret with a TLS certificate and key.
-                      The secret must belong to the same namespace as the VirtualServer.
-                      The secret must be of the type kubernetes.io/tls and contain
-                      keys named tls.crt and tls.key that contain the certificate
-                      and private key as described here. If the secret doesn’t exist
-                      or is invalid, NGINX will break any attempt to establish a TLS
-                      connection to the host of the VirtualServer. If the secret is
-                      not specified but wildcard TLS secret is configured, NGINX will
-                      use the wildcard secret for TLS termination.
-                    type: string
-                type: object
               upstreams:
                 description: A list of upstreams.
                 items:
@@ -1376,9 +1187,12 @@ spec:
                 type: array
             type: object
           status:
-            description: Status contains the current status of the VirtualServer.
+            description: VirtualServerRouteStatus defines the status for the VirtualServerRoute
+              resource.
             properties:
               externalEndpoints:
+                description: Defines the IPs, hostnames and ports used to connect
+                  to this resource.
                 items:
                   description: ExternalEndpoint defines the IP/ Hostname and ports
                     used to connect to this resource.
@@ -1392,10 +1206,20 @@ spec:
                   type: object
                 type: array
               message:
+                description: The message of the current state of the resource. It
+                  can contain more detailed information about the reason.
                 type: string
               reason:
+                description: The reason of the current state of the resource.
+                type: string
+              referencedBy:
+                description: Defines how other resources reference this resource.
                 type: string
               state:
+                description: 'Represents the current state of the resource. There
+                  are three possible values: Valid, Invalid and Warning. Valid indicates
+                  that the resource has been validated and accepted by the Ingress
+                  Controller. Invalid means the resource failed validation or NGINX'
                 type: string
             type: object
         type: object

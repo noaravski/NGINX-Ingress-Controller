@@ -10,6 +10,13 @@ rules:
   verbs:
   - list
   - watch
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - list
 - apiGroups:
   - networking.k8s.io
   resources:
